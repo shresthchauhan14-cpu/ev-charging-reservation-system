@@ -93,6 +93,14 @@ app.use('/api/v1/reservations', reservationsRoutes);
 app.use('/api/v1/waiting-list', waitingListRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
+// Unversioned aliases for backward compatibility & direct endpoint access
+app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/stations', stationsRoutes);
+app.use('/api/reservations', reservationsRoutes);
+app.use('/api/waiting-list', waitingListRoutes);
+app.use('/api/admin', adminRoutes);
+
 // 404 Handler
 app.use((req: Request, res: Response) => {
   res.status(404).json({
