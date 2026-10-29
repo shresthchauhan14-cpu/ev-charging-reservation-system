@@ -15,8 +15,8 @@
 | **Git Repository** | [https://github.com/shresthchauhan14-cpu/ev-charging-reservation-system](https://github.com/shresthchauhan14-cpu/ev-charging-reservation-system) |
 | **Git Default Branch** | `main` |
 | **Latest Commit Hash** | `b326682` |
-| **Frontend Production URL** | [https://client-ochre-gamma-55.vercel.app](https://client-ochre-gamma-55.vercel.app) |
-| **Frontend Deployment ID** | `dpl_FmvNKB5pwfY4KaMPpchxcyMQUHvC` |
+| **Frontend Production URL** | [https://ev-charging-reservation-system.vercel.app](https://ev-charging-reservation-system.vercel.app) |
+| **Frontend Deployment ID** | `dpl_HsaqeTuM18aXaWQkrH9bWswE2YAk` |
 | **Frontend Host Platform** | Vercel Edge Network (Edge node: `bom1`) |
 | **Backend API Host (Local)** | `http://localhost:5000` |
 | **Backend Cloud Compatibility** | Containerized / Persistent Node.js (Render, Railway, Fly.io, AWS EC2) |
@@ -27,7 +27,7 @@
 
 ## 2. Live HTTP Smoke Test Verification
 
-The live deployment at `https://client-ochre-gamma-55.vercel.app` was independently tested via direct network requests:
+The live deployment at `https://ev-charging-reservation-system.vercel.app` was independently tested via direct network requests:
 
 ### A. Root Landing Route (`/`)
 ```http
@@ -35,7 +35,7 @@ HTTP/1.1 200 OK
 Server: Vercel
 Content-Type: text/html; charset=utf-8
 Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-X-Vercel-Id: bom1::nrspr-1793302553362-5015adbc02cf
+X-Vercel-Id: bom1::mrmng-1793303891915-70db7448b890
 ```
 * **Payload Verified:** Valid HTML document containing title `"VoltReserve — EV Charging Reservation & Real-Time Availability System | IILM University"` and `<div id="root"></div>`.
 
