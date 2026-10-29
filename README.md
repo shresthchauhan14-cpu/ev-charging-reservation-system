@@ -138,19 +138,20 @@ The database includes pre-configured accounts for seamless presentation:
 
 ## 8. Automated Testing
 
-Run the automated test suite executing against PostgreSQL:
+Run the comprehensive automated test suite executing directly against PostgreSQL:
 ```bash
 npm run test --workspace=server
 ```
 
-**Results (12/12 Tests Passing):**
-- Priority Algorithm formula and time-decay unit tests.
-- Authentication and station querying integration tests.
-- **PostgreSQL concurrency collision tests**: Confirms that two simultaneous conflicting reservation requests for the same dispenser resolve deterministically with `201 Created` and `409 Conflict`.
+**Results (18/18 Tests Passing across 4 Test Suites):**
+- **Priority Algorithm Unit Tests (5/5)**: Multi-criteria priority formulation $P_i = 0.50U_i + 0.30T_i + 0.20R_i$, wait time saturation, and out-of-bounds SOC clamping.
+- **Authentication & API Integration Tests (5/5)**: Health checks, academic metadata, JWT generation, invalid credentials rejection, and station discovery.
+- **PostgreSQL Concurrency Tests (2/2)**: Real-time interval collision prevention verifying that two simultaneous conflicting reservation requests for the same dispenser resolve deterministically with `201 Created` and `409 Conflict`.
+- **Security & Authorization Tests (6/6)**: Unauthenticated access prevention, user ownership verification, IDOR/BOLA read and cancellation protection, and admin dashboard role enforcement.
 
 ---
 
-## 9. Production Builds
+## 9. Production Builds & Live Deployment
 
 ```bash
 # Build both frontend and backend
@@ -159,6 +160,10 @@ npm run build
 - Server output: `server/dist/`
 - Client output: `client/dist/`
 
+### Live Production Deployment
+- **Frontend URL (Vercel):** [https://client-ochre-gamma-55.vercel.app](https://client-ochre-gamma-55.vercel.app)
+- **GitHub Repository:** [https://github.com/shresthchauhan14-cpu/ev-charging-reservation-system](https://github.com/shresthchauhan14-cpu/ev-charging-reservation-system)
+
 ---
 
 ## 10. Security Notes & Academic Limitations
@@ -166,7 +171,8 @@ npm run build
 1. **Academic Scope**: This is a Phase-I research and functional prototype. Hardware IoT connectivity (OCPP protocol) and physical energy metering are simulated via database records.
 2. **PostgreSQL Security**: SQL queries utilize parameterized placeholders (`$1, $2`) to eliminate SQL injection vulnerabilities.
 3. **Session Security**: JWT tokens are signed using a 256-bit secret and stored in HttpOnly cookies with SameSite protection.
-4. **Data Reset**: Administrators can restore clean demonstration data at any time via the Admin Console or by executing `npm run seed`.
+4. **IDOR & BOLA Protection**: Strict user-ownership validation on reservation lookup and cancellation routes.
+5. **Data Reset**: Administrators can restore clean demonstration data at any time via the Admin Console or by executing `npm run seed`.
 
 ---
 
