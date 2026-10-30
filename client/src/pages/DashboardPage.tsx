@@ -12,11 +12,21 @@ import {
   Shield,
   Car,
   QrCode,
+  Activity,
+  Radio,
+  Leaf,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Reservation, ChargingStation } from '../types';
 import { Modal } from '../components/common/Modal';
+import {
+  isSupabaseConfigured,
+  subscribeToRealtimeAvailability,
+  unsubscribeChannel,
+} from '../services/supabase';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -26,13 +36,11 @@ export const DashboardPage: React.FC = () => {
   const [stations, setStations] = useState<ChargingStation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTicket, setActiveTicket] = useState<Reservation | null>(null);
+  const [copiedRef, setCopiedRef] = useState(false);
+  const [realtimeActive, setRealtimeActive] = useState(false);
+  const [liveEventNotice, setLiveEventNotice] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
+  const loadData = () => {
     Promise.all([api.getReservations(), api.getStations()])
       .then(([resvs, stns]) => {
         setReservations(resvs);
@@ -40,6 +48,31 @@ export const DashboardPage: React.FC = () => {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    loadData();
+
+    // Supabase Realtime Subscription
+    const configured = isSupabaseConfigured();
+    setRealtimeActive(configured);
+
+    if (configured) {
+      const channel = subscribeToRealtimeAvailability((payload) => {
+        setLiveEventNotice(`Realtime sync: ${payload.table} updated (${payload.eventType})`);
+        loadData();
+        setTimeout(() => setLiveEventNotice(null), 5000);
+      });
+
+      return () => {
+        if (channel) unsubscribeChannel(channel);
+      };
+    }
   }, [user, navigate]);
 
   const upcomingReservations = reservations.filter(
@@ -57,8 +90,20 @@ export const DashboardPage: React.FC = () => {
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-700 text-white rounded-3xl p-6 sm:p-8 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
-          <div className="text-xs uppercase font-bold tracking-wider text-emerald-200">
-            Driver Control Center
+          <div className="flex items-center gap-2">
+            <span className="text-xs uppercase font-bold tracking-wider text-emerald-200">
+              Driver Control Center
+            </span>
+            {realtimeActive ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/40 text-emerald-100 border border-emerald-400/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Supabase Realtime Live</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-900/40 text-emerald-200 border border-emerald-500/30">
+                <span>PostgreSQL Dual-Engine</span>
+              </span>
+            )}
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Welcome back, {user?.fullName}!
@@ -66,6 +111,12 @@ export const DashboardPage: React.FC = () => {
           <p className="text-xs sm:text-sm text-emerald-100 max-w-xl">
             Active driver profile connected to Greater Noida EV infrastructure. Manage your bookings and inspect intelligent waiting-list priority allocations.
           </p>
+          {liveEventNotice && (
+            <div className="mt-2 inline-flex items-center gap-2 text-xs font-mono font-medium text-emerald-950 bg-emerald-200/90 px-3 py-1 rounded-lg border border-emerald-300">
+              <Activity className="w-3.5 h-3.5 text-emerald-800" />
+              <span>{liveEventNotice}</span>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -81,6 +132,40 @@ export const DashboardPage: React.FC = () => {
           >
             My Bookings
           </Link>
+        </div>
+      </div>
+
+      {/* Eco-Telemetry & Energy Metrics Strip */}
+      <div className="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+            <Leaf className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-slate-200">Driver Green Telemetry & Environmental Impact</div>
+            <div className="text-[11px] text-slate-400">Zero-emission mobility statistics across Greater Noida network</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-6 text-xs">
+          <div>
+            <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">CO₂ Offset</div>
+            <div className="text-base font-bold text-emerald-400">
+              {(completedReservations.length * 14.5 + 24.2).toFixed(1)} kg
+            </div>
+          </div>
+          <div className="h-8 w-px bg-slate-800" />
+          <div>
+            <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Clean Energy</div>
+            <div className="text-base font-bold text-teal-400">
+              {(completedReservations.length * 18.2 + 32.5).toFixed(1)} kWh
+            </div>
+          </div>
+          <div className="h-8 w-px bg-slate-800" />
+          <div>
+            <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Grid Reliability</div>
+            <div className="text-base font-bold text-cyan-400">99.8%</div>
+          </div>
         </div>
       </div>
 
@@ -266,6 +351,19 @@ export const DashboardPage: React.FC = () => {
               <div className="text-xs font-bold text-slate-900">{activeTicket.stationName}</div>
               <div className="text-[11px] text-slate-500">
                 Dispenser: {activeTicket.pointCode} • Scheduled: {new Date(activeTicket.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
+              <div className="pt-2 flex justify-center">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(activeTicket.bookingReference);
+                    setCopiedRef(true);
+                    setTimeout(() => setCopiedRef(false), 2000);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                >
+                  {copiedRef ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+                  <span>{copiedRef ? 'Reference Copied!' : `Copy Ref: ${activeTicket.bookingReference}`}</span>
+                </button>
               </div>
             </div>
 

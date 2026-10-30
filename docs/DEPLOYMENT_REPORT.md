@@ -17,12 +17,14 @@
 | **Latest Commit Hash** | `4d55810` |
 | **Personal Vercel Account** | `shresthchauhan14-cpus-projects` (`shresthchauhan14@gmail.com`) |
 | **Frontend Production URL** | [https://ev-charging-reservation-system-opal.vercel.app](https://ev-charging-reservation-system-opal.vercel.app) |
-| **Frontend Deployment ID** | `dpl_sXEiQZZRUjyTjPvHFL5oWNQFW7hM` |
 | **Preserved Legacy URL** | [https://ev-charging-reservation-system.vercel.app](https://ev-charging-reservation-system.vercel.app) |
+| **Supabase Cloud Schema** | `supabase/migrations/20261030000001_initial_supabase_schema.sql` (10 tables, RLS, `btree_gist`) |
+| **Supabase Realtime Engine** | WebSocket channels on `charging_points`, `reservations`, `waiting_list_entries` |
+| **UI/UX Enhancements** | Multi-stage `EVChargingAnimation`, dark automotive hero, driver eco-telemetry |
 | **Frontend Host Platform** | Vercel Edge Network (Edge node: `bom1`) |
 | **Backend API Host (Local)** | `http://localhost:5000` |
 | **Backend Cloud Compatibility** | Containerized / Persistent Node.js (Render, Railway, Fly.io, AWS EC2) |
-| **Database Engine** | PostgreSQL 16 (Embedded PGlite persistent in `./database/pgdata/` / External `pg.Pool`) |
+| **Database Engine** | Dual-Mode: Supabase Cloud PostgreSQL / Embedded PostgreSQL 16 (`@electric-sql/pglite`) |
 | **Automated Test Results** | 18 Passed / 18 Total (4 Test Suites, exit code `0`) |
 
 ---

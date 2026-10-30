@@ -1,5 +1,5 @@
 export interface User {
-  id: number;
+  id: number | string;
   fullName: string;
   email: string;
   phone?: string;
@@ -52,7 +52,7 @@ export interface ChargingStation {
 export interface Reservation {
   id: number;
   bookingReference: string;
-  userId: number;
+  userId: number | string;
   userName?: string;
   userEmail?: string;
   chargingPointId: number;

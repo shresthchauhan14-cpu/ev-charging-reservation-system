@@ -10,11 +10,13 @@
 ## 1. Project Overview
 
 **VoltReserve** is a full-stack EV charging reservation platform engineered to solve real-world electric vehicle charging congestion, peak-hour queue uncertainty, and slot scheduling contention. Unlike superficial UI mockups, VoltReserve integrates:
-1. **Persistent PostgreSQL 16 Database**: Full 3NF relational schema storing stations, dispensers, users, vehicles, reservations, and audit logs.
-2. **PostgreSQL-Enforced Concurrency Control**: Prevents double-booking via half-open interval overlap detection (`newStart < existingEnd AND newEnd > existingStart`) inside ACID transactions.
-3. **Intelligent Waiting-List Reallocation Algorithm**: Evaluates queued drivers when slots become available, using a multi-criteria priority formulation:
+1. **Persistent PostgreSQL 16 & Supabase Cloud Database**: Full 10-table 3NF relational schema with Row Level Security (RLS) policies, foreign key integrity, and automated trigger functions (`supabase/migrations/`).
+2. **Database-Level Concurrency Control**: Prevents double-booking via PostgreSQL GiST exclusion constraints (`btree_gist` with `EXCLUDE USING gist`) and half-open interval overlap detection (`[start_time, end_time)`) inside serializable transactions.
+3. **Supabase Realtime WebSocket Subscriptions**: Broadcasts live dispenser state changes and released slot notifications instantly across all connected driver dashboards.
+4. **Intelligent Waiting-List Reallocation Algorithm**: Evaluates queued drivers when slots become available, using a multi-criteria priority formulation:
    $$P_i = 0.50 \cdot U_i + 0.30 \cdot T_i + 0.20 \cdot R_i$$
-4. **Dual-Mode Database Adapter**: Seamlessly runs against an external PostgreSQL server or uses the built-in embedded PostgreSQL 16 engine (`@electric-sql/pglite`), guaranteeing zero-config local execution on any presentation workstation.
+5. **Dual-Mode Database Adapter**: Seamlessly runs against Supabase Managed Cloud PostgreSQL, external PostgreSQL servers, or the built-in embedded PostgreSQL 16 engine (`@electric-sql/pglite`), guaranteeing zero-config local execution on any presentation workstation.
+6. **Premium Animated EV Charging UI**: Interactive multi-stage SVG connector docking and energy pulse animation (`EVChargingAnimation`), high-impact dark automotive aesthetic, and live eco-telemetry driver dashboard.
 
 ---
 
@@ -27,15 +29,16 @@
 - **Check-In Grace Period (15 Mins)**: Drivers scan a digital QR pass at the hub; unfulfilled reservations can be marked `NO_SHOW` and reallocated.
 - **Smart Waiting List & Simulator**: Live priority queue ranking drivers by battery SOC urgency ($U_i$), elapsed wait time ($T_i$), and reliability ($R_i$), with an interactive viva demonstration simulator.
 - **Administrator Control Console**: Real-time infrastructure telemetry, station and dispenser provisioning, no-show disputes, and single-click database resets.
+- **Supabase Realtime Sync**: Automatic UI updates whenever charging points toggle status or slots are reserved/freed.
 
 ---
 
 ## 3. Technology Stack
 
-- **Frontend**: React 19, TypeScript, Vite 6, Tailwind CSS, React Router v7, Lucide Icons.
-- **Backend**: Node.js, Express 5, TypeScript, Zod Schema Validation, Helmet, CORS, Cookie-Parser.
-- **Security**: Bcrypt password hashing (cost factor 10), JWT Bearer tokens, HttpOnly cookies, RBAC (`USER`, `ADMIN`).
-- **Database**: PostgreSQL 16 (Dual-mode: External `pg.Pool` or embedded `@electric-sql/pglite` persistent engine).
+- **Frontend**: React 19, TypeScript, Vite 6, Tailwind CSS, React Router v7, Lucide Icons, Supabase JS Client (`@supabase/supabase-js`).
+- **Backend**: Node.js, Express 5, TypeScript, Zod Schema Validation, Helmet, CORS, Cookie-Parser, `@supabase/supabase-js`.
+- **Security**: Bcrypt password hashing (cost factor 10), Supabase GoTrue Auth, JWT Bearer tokens, HttpOnly cookies, RBAC (`USER`, `ADMIN`), Row Level Security (RLS) on all 10 tables.
+- **Database**: PostgreSQL 16 & Supabase Cloud (Dual-mode: Supabase / External `pg.Pool` or embedded `@electric-sql/pglite` persistent engine with GiST exclusion constraints).
 - **Testing**: Vitest, Supertest, automated concurrency race-condition testing suite.
 
 ---

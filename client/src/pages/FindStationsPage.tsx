@@ -13,14 +13,24 @@ import {
   AlertTriangle,
   Map as MapIcon,
   List as ListIcon,
+  Activity,
+  Radio,
+  Wifi,
 } from 'lucide-react';
 import { api } from '../services/api';
 import { ChargingStation } from '../types';
+import {
+  isSupabaseConfigured,
+  subscribeToRealtimeAvailability,
+  unsubscribeChannel,
+} from '../services/supabase';
 
 export const FindStationsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [stations, setStations] = useState<ChargingStation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [realtimeActive, setRealtimeActive] = useState<boolean>(false);
+  const [lastRealtimeEvent, setLastRealtimeEvent] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
@@ -50,6 +60,31 @@ export const FindStationsPage: React.FC = () => {
     fetchStations();
   }, [searchQuery, cityFilter, connectorType]);
 
+  // Set up Supabase Realtime Subscription
+  useEffect(() => {
+    const configured = isSupabaseConfigured();
+    setRealtimeActive(configured);
+
+    if (configured) {
+      const channel = subscribeToRealtimeAvailability((payload) => {
+        setLastRealtimeEvent(`Event: ${payload.table} (${payload.eventType}) at ${new Date().toLocaleTimeString()}`);
+        // Re-fetch stations to reflect updated availability counts
+        api.getStations({
+          search: searchQuery,
+          city: cityFilter,
+          connectorType: connectorType || undefined,
+        }).then(setStations).catch(console.error);
+
+        // Clear notification pill after 5 seconds
+        setTimeout(() => setLastRealtimeEvent(null), 5000);
+      });
+
+      return () => {
+        if (channel) unsubscribeChannel(channel);
+      };
+    }
+  }, [searchQuery, cityFilter, connectorType]);
+
   // Apply in-memory power filter & sorting
   const filteredStations = stations
     .filter((s) => s.maxPowerKw >= minPower)
@@ -65,10 +100,29 @@ export const FindStationsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Charging Stations Explorer</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Charging Stations Explorer</h1>
+            {realtimeActive ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Supabase Realtime Active</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                <span className="w-2 h-2 rounded-full bg-slate-400" />
+                <span>PostgreSQL Dual-Engine</span>
+              </span>
+            )}
+          </div>
           <p className="text-sm text-slate-600 mt-1">
-            Discover verified EV charging points across Greater Noida with database-recorded availability.
+            Discover verified EV charging points across Greater Noida with database-recorded real-time availability.
           </p>
+          {lastRealtimeEvent && (
+            <div className="mt-2 inline-flex items-center gap-2 text-xs font-mono font-medium text-emerald-800 bg-emerald-100/80 px-3 py-1 rounded-lg border border-emerald-300 animate-pulse">
+              <Activity className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Live Synced: {lastRealtimeEvent}</span>
+            </div>
+          )}
         </div>
 
         {/* View Toggle */}
@@ -156,25 +210,46 @@ export const FindStationsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Power Chips */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs">
-          <span className="text-slate-500 font-medium">Power rating:</span>
-          {[0, 50, 100, 150].map((kw) => (
-            <button
-              key={kw}
-              onClick={() => setMinPower(kw)}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${
-                minPower === kw
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {kw === 0 ? 'Any Speed' : `≥ ${kw} kW`}
-            </button>
-          ))}
-          <span className="text-slate-400 ml-auto hidden sm:inline">
-            Showing {filteredStations.length} station{filteredStations.length === 1 ? '' : 's'}
-          </span>
+        {/* Quick Connector Chips & Power Chips */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-slate-500 font-medium">Standard:</span>
+            {[
+              { label: 'All', value: '' },
+              { label: 'CCS2 (DC Fast)', value: 'CCS2' },
+              { label: 'Type 2 (AC)', value: 'TYPE2' },
+              { label: 'GB/T', value: 'GBT' },
+            ].map((c) => (
+              <button
+                key={c.label}
+                onClick={() => setConnectorType(c.value)}
+                className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                  connectorType === c.value
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-slate-500 font-medium">Power:</span>
+            {[0, 50, 100, 150].map((kw) => (
+              <button
+                key={kw}
+                onClick={() => setMinPower(kw)}
+                className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                  minPower === kw
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {kw === 0 ? 'Any kW' : `≥ ${kw} kW`}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -294,10 +369,13 @@ export const FindStationsPage: React.FC = () => {
                   </div>
 
                   <div className="text-right">
-                    <div className="text-xs font-bold text-slate-900">
-                      {station.availablePoints} / {station.totalPoints} Free
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold shadow-xs border bg-slate-50 border-slate-200">
+                      <span className={`w-2 h-2 rounded-full ${station.availablePoints > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                      <span className={station.availablePoints > 0 ? 'text-emerald-700' : 'text-rose-600'}>
+                        {station.availablePoints} / {station.totalPoints} Free
+                      </span>
                     </div>
-                    <div className="text-[10px] text-slate-500">Charging Points</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Real-time Dispenser Grid</div>
                   </div>
                 </div>
 
@@ -319,14 +397,24 @@ export const FindStationsPage: React.FC = () => {
                     <span className="font-medium text-slate-700">₹{station.minPricePerKwh}/kWh</span>
                   </div>
 
-                  {station.connectorTypes.map((c) => (
-                    <span
-                      key={c}
-                      className="bg-emerald-50/70 border border-emerald-200/60 text-emerald-800 font-semibold px-2 py-1 rounded-lg"
-                    >
-                      {c}
-                    </span>
-                  ))}
+                  {station.connectorTypes.map((c) => {
+                    const isCCS2 = c.toUpperCase().includes('CCS');
+                    const isType2 = c.toUpperCase().includes('TYPE2');
+                    return (
+                      <span
+                        key={c}
+                        className={`font-semibold px-2 py-1 rounded-lg border text-[11px] ${
+                          isCCS2
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            : isType2
+                            ? 'bg-blue-50 text-blue-800 border-blue-200'
+                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                        }`}
+                      >
+                        {c}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
 

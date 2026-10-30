@@ -35,6 +35,7 @@ export function App() {
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/stations" element={<FindStationsPage />} />
+              <Route path="/find-stations" element={<FindStationsPage />} />
               <Route path="/stations/:id" element={<StationDetailsPage />} />
               <Route path="/waiting-list" element={<WaitingListPage />} />
               <Route path="/how-it-works" element={<HowItWorksPage />} />
