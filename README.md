@@ -161,7 +161,8 @@ npm run build
 - Client output: `client/dist/`
 
 ### Live Production Deployment
-- **Frontend URL (Vercel):** [https://ev-charging-reservation-system.vercel.app](https://ev-charging-reservation-system.vercel.app)
+- **Personal Production URL (Vercel):** [https://ev-charging-reservation-system-opal.vercel.app](https://ev-charging-reservation-system-opal.vercel.app)
+- **Preserved Alias:** [https://ev-charging-reservation-system.vercel.app](https://ev-charging-reservation-system.vercel.app)
 - **GitHub Repository:** [https://github.com/shresthchauhan14-cpu/ev-charging-reservation-system](https://github.com/shresthchauhan14-cpu/ev-charging-reservation-system)
 
 ---

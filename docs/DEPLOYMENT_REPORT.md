@@ -14,9 +14,11 @@
 |---|---|
 | **Git Repository** | [https://github.com/shresthchauhan14-cpu/ev-charging-reservation-system](https://github.com/shresthchauhan14-cpu/ev-charging-reservation-system) |
 | **Git Default Branch** | `main` |
-| **Latest Commit Hash** | `b326682` |
-| **Frontend Production URL** | [https://ev-charging-reservation-system.vercel.app](https://ev-charging-reservation-system.vercel.app) |
-| **Frontend Deployment ID** | `dpl_HsaqeTuM18aXaWQkrH9bWswE2YAk` |
+| **Latest Commit Hash** | `4d55810` |
+| **Personal Vercel Account** | `shresthchauhan14-cpus-projects` (`shresthchauhan14@gmail.com`) |
+| **Frontend Production URL** | [https://ev-charging-reservation-system-opal.vercel.app](https://ev-charging-reservation-system-opal.vercel.app) |
+| **Frontend Deployment ID** | `dpl_sXEiQZZRUjyTjPvHFL5oWNQFW7hM` |
+| **Preserved Legacy URL** | [https://ev-charging-reservation-system.vercel.app](https://ev-charging-reservation-system.vercel.app) |
 | **Frontend Host Platform** | Vercel Edge Network (Edge node: `bom1`) |
 | **Backend API Host (Local)** | `http://localhost:5000` |
 | **Backend Cloud Compatibility** | Containerized / Persistent Node.js (Render, Railway, Fly.io, AWS EC2) |
@@ -27,7 +29,7 @@
 
 ## 2. Live HTTP Smoke Test Verification
 
-The live deployment at `https://ev-charging-reservation-system.vercel.app` was independently tested via direct network requests:
+The live deployment at `https://ev-charging-reservation-system-opal.vercel.app` (personal account) was independently tested via direct network requests:
 
 ### A. Root Landing Route (`/`)
 ```http
@@ -35,7 +37,7 @@ HTTP/1.1 200 OK
 Server: Vercel
 Content-Type: text/html; charset=utf-8
 Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-X-Vercel-Id: bom1::mrmng-1793303891915-70db7448b890
+X-Vercel-Id: bom1::wcl7t-1793332359481-8421503f9734
 ```
 * **Payload Verified:** Valid HTML document containing title `"VoltReserve — EV Charging Reservation & Real-Time Availability System | IILM University"` and `<div id="root"></div>`.
 
@@ -55,6 +57,7 @@ HTTP/1.1 200 OK
 Server: Vercel
 Content-Type: text/html; charset=utf-8
 Content-Disposition: inline; filename="index.html"
+X-Vercel-Id: bom1::2qnf7-1793332388136-d24dc49ffde7
 ```
 * **Status:** Verified that `client/vercel.json` SPA rewrite rules correctly serve `index.html` for deep client-side routes, allowing seamless React Router navigation on refresh.
 
